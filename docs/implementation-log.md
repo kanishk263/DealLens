@@ -6,8 +6,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 |---|---|---|
 | 1. Repository and foundation | #1 | Done |
 | 2. Authentication and authorization | #10 | Done |
-| 3. Database and company management | #2 | In progress |
-| 4. Document upload and processing | #3 | Pending |
+| 3. Database and company management | #2 | Done |
+| 4. Document upload and processing | #3 | In progress |
 | 5. Financial data review | #4 | Pending |
 | 6. Financial analytics | #5 | Pending |
 | 7. Valuation | #6 | Pending |
@@ -69,3 +69,30 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 - Email/password sign-in is enabled only on the local stack for test fixtures; it must be disabled on hosted projects.
 
 **External configuration still required**: Google OAuth client ID/secret; hosted Supabase project; bootstrap email.
+
+---
+
+## Phase 3 — Database and company management (2026-10-25)
+
+**Implemented**
+- Superadmin workspace: platform overview, access-request queue (approve into a company / reject, self-review blocked),
+  users & roles (search, status filter, pagination, suspend/reactivate with reason, grant/revoke roles), companies
+  (create/edit, members, membership suspension, one-time invitation links), submission monitoring with analyst
+  assignment/archiving/retry, processing-job monitor, audit-log viewer with filters, platform settings (no secrets).
+- Company workspace: dashboard (counts scoped by RLS, recent activity), submissions list with search/filter/sort/pagination.
+- Notification centre (read/unread, mark read) and profile page.
+- Shared: server-action form wrapper with toasts, URL pagination, TanStack data table, assignment form, audit table.
+- Submission state machine mirror (`lib/submissions/workflow.ts`) verified against the database transition table.
+- `supabase/seed.sql`: three synthetic companies + deal projects (no users or grants).
+- Section layout guard for `/admin` (defense in depth).
+
+**Tests**
+- `tests/integration/company-isolation.test.ts` (9): A cannot list/fetch/create/attach for B; analysts cannot see drafts;
+  superadmin metadata access; claim of draft refused; browser cannot publish (and the attempt is audited);
+  TS/DB transition tables identical. ✅
+- `tests/unit/workflow.test.ts` (6). ✅ Full suite: 44/44 ✅. `next build` ✅. `eslint` ✅.
+- `scripts/smoke-pages.ts`: renders every admin/company page with real local sessions; unauthorised roles are redirected.
+
+**Notes**
+- Unauthorised page requests redirect via a streamed RSC redirect (HTTP 200 + redirect instruction) because of the
+  route-group loading boundary; the protected page body is never rendered (only its static `<title>`).
