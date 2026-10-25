@@ -278,6 +278,9 @@ download works, other company cannot even with ID and path; immutability; v2 sup
 | Integration tests (local Supabase, real worker) | ✅ 72/72 |
 | Playwright E2E (critical journey) | ✅ 12/12, two consecutive runs |
 | Page smoke test (all roles) | ✅ |
+| GitHub Actions CI (all jobs) | ✅ |
 
 **Not verified**: real Google consent and hosted deployment (no Google OAuth client or hosted Supabase/Vercel
-credentials were available in this environment); the CI workflow has been written but its first GitHub run is pending.
+credentials were available in this environment).
+
+**GitHub Actions**: first CI run on `main` passed all three jobs — web (lint, type-check, unit, build), worker tests, and integration + Playwright E2E against a fresh local Supabase stack in CI.
