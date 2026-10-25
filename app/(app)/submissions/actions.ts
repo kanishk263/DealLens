@@ -52,3 +52,13 @@ export async function removeDocument(_: unknown, fd: FormData): Promise<ActionRe
   if (error) return fail(error);
   return { ok: true, message: "Document removed." };
 }
+
+export async function respondClarification(_: unknown, fd: FormData): Promise<ActionResult> {
+  await requireRole("company_user");
+  const parsed = z.object({ clarificationId: z.string().uuid(), response: z.string().trim().min(2, "Write a response").max(5000) }).safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("respond_clarification", { p_clarification: parsed.data.clarificationId, p_response: parsed.data.response });
+  if (error) return fail(error);
+  return { ok: true, message: "Response sent to the finance team." };
+}

@@ -138,3 +138,79 @@ export async function reviewRedFlag(_: unknown, fd: FormData): Promise<ActionRes
   if (error) return fail(error);
   return { ok: true, message: `Red flag marked ${parsed.data.status}.` };
 }
+
+const findingSchema = z.object({
+  id: z.string().uuid().optional().or(z.literal("")),
+  submissionId: uuid,
+  category: z.enum(["revenue", "profitability", "ebitda", "working_capital", "debt", "cash_flow", "data_quality", "valuation", "other"]),
+  title: z.string().trim().min(3).max(200),
+  description: z.string().trim().min(3).max(5000),
+  severity: z.enum(["critical", "high", "medium", "low", "informational"]),
+  impact: z.string().trim().optional(),
+  recommendation: z.string().trim().max(2000).optional(),
+  visibility: z.enum(["internal", "client_visible"]),
+  references: z.string().trim().max(2000).optional(),
+});
+
+export async function saveFinding(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = findingSchema.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const d = parsed.data;
+  let impact: number | null = null;
+  if (d.impact) {
+    impact = Number(d.impact.replace(/,/g, ""));
+    if (!Number.isFinite(impact)) return { ok: false, error: "Quantified impact must be a number" };
+  }
+  const supabase = await createClient();
+  const { data: sub } = await supabase.from("submissions").select("reporting_currency").eq("id", d.submissionId).maybeSingle();
+  if (!sub) return { ok: false, error: "Submission not found" };
+  const refs = (d.references ?? "").split(/\n|;/).map((r) => r.trim()).filter(Boolean).slice(0, 30).map((reference) => ({ reference }));
+  const { error } = await supabase.rpc("save_finding", {
+    p_id: d.id || null, p_submission: d.submissionId, p_category: d.category, p_title: d.title, p_description: d.description, p_severity: d.severity,
+    p_impact: impact, p_impact_currency: impact === null ? null : sub.reporting_currency, p_source_references: refs, p_recommendation: d.recommendation || null, p_visibility: d.visibility,
+  });
+  if (error) return fail(error);
+  return { ok: true, message: d.id ? "Finding updated." : "Finding created." };
+}
+
+export async function setFindingStatus(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ findingId: uuid, status: z.enum(["draft", "in_review", "approved", "closed"]) }).safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_finding_status", { p_finding: parsed.data.findingId, p_status: parsed.data.status });
+  if (error) return fail(error);
+  return { ok: true, message: `Finding marked ${parsed.data.status.replace("_", " ")}.` };
+}
+
+export async function addFindingComment(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ findingId: uuid, text: z.string().trim().min(1).max(5000), visibility: z.enum(["internal", "client_visible"]) }).safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("add_finding_comment", { p_finding: parsed.data.findingId, p_text: parsed.data.text, p_visibility: parsed.data.visibility });
+  if (error) return fail(error);
+  return { ok: true, message: "Comment added." };
+}
+
+export async function createClarification(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ submissionId: uuid, question: z.string().trim().min(5, "Write the question (5+ characters)").max(5000), requestedDocuments: z.string().trim().max(1000).optional() })
+    .safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("create_clarification", { p_submission: parsed.data.submissionId, p_question: parsed.data.question, p_requested_documents: parsed.data.requestedDocuments || null });
+  if (error) return fail(error);
+  return { ok: true, message: "Clarification sent to the company." };
+}
+
+export async function resolveClarification(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ clarificationId: uuid, status: z.enum(["resolved", "cancelled"]) }).safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("resolve_clarification", { p_clarification: parsed.data.clarificationId, p_status: parsed.data.status });
+  if (error) return fail(error);
+  return { ok: true, message: `Clarification ${parsed.data.status}.` };
+}

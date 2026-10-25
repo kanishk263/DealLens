@@ -11,8 +11,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 5. Financial data review | #4 | Done |
 | 6. Financial analytics | #5 | Done |
 | 7. Valuation | #6 | Done |
-| 8. Findings and collaboration | #7 | In progress |
-| 9. Reports | #8 | Pending |
+| 8. Findings and collaboration | #7 | Done |
+| 9. Reports | #8 | In progress |
 | 10. Hardening and deployment | #9 | Pending |
 
 ---
@@ -201,3 +201,23 @@ review status persists across re-analysis). ✅ Visual check of rendered charts 
 **Tests**: `tests/unit/valuation.test.ts` (15, incl. a hand-computed DCF: EV = 1,421.875) and
 `tests/integration/valuation.test.ts` (4: versioning, reproducibility from stored inputs, scope/visibility, four-eyes
 approval). Full TS suite 98/98 ✅. Visual check of the DCF page ✅.
+
+---
+
+## Phase 8 — Findings and collaboration (2026-10-25)
+
+**Implemented**
+- Findings register (ID, category, title, severity, quantified impact, sources, status, visibility, owner, updated) with
+  create/edit, review workflow (draft → in review → approved → closed; author cannot self-approve unless a reviewer),
+  edits to approved findings reset them to draft, threaded comments with internal / client-visible visibility, and
+  prompts for escalated red flags.
+- Clarification centre for analysts (request with optional document list, resolve/cancel) and a company tab to respond
+  and attach supporting documents; the submission moves to `clarification_required` and back to `in_analysis` when the
+  last request closes; attachments are queued for extraction on resolution.
+- Notifications for clarification requested/answered, assignment, processing, reports — all scoped by company/role.
+
+**Tests**: `tests/integration/collaboration.test.ts` (9): sequential reference codes; nothing visible to the company
+before approval; self-approval blocked; company sees only approved client-visible findings and client-visible comments
+on them (internal comments and internal findings never); edit resets approval; company cannot write findings;
+clarification state transitions; cross-company notifications and responses blocked; attachment upload during
+clarification; resolution queues reprocessing. ✅
