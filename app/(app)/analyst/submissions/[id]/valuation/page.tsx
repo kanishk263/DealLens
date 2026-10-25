@@ -3,7 +3,7 @@ import { LinkTabs } from "@/components/ui/link-tabs";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { ActionForm, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FormSubmit } from "@/components/forms/action-form";
 import { Input } from "@/components/ui/form-controls";
 import { ChartCard } from "@/components/charts/chart-card";
 import { ValuationRange } from "@/components/charts/charts";
@@ -110,14 +110,14 @@ export default async function ValuationPage({ params, searchParams }: { params: 
                   <div className="flex flex-col items-end gap-2">
                     <StatusBadge status={m.review_status} />
                     {canWork && mine && m.review_status === "draft" ? (
-                      <ActionForm action={reviewValuationModel}>{(p) => <><input type="hidden" name="modelId" value={m.id} /><input type="hidden" name="status" value="pending_review" /><SubmitButton pending={p} size="sm" variant="secondary">Submit for review</SubmitButton></>}</ActionForm>
+                      <ActionForm action={reviewValuationModel}><><input type="hidden" name="modelId" value={m.id} /><input type="hidden" name="status" value="pending_review" /><FormSubmit size="sm" variant="secondary">Submit for review</FormSubmit></></ActionForm>
                     ) : null}
                     {ctx.roles.includes("finance_reviewer") && !mine && ["draft", "pending_review"].includes(m.review_status) ? (
-                      <ActionForm action={reviewValuationModel} className="flex items-center gap-1">{(p) => <>
+                      <ActionForm action={reviewValuationModel} className="flex items-center gap-1"><>
                         <input type="hidden" name="modelId" value={m.id} />
                         <Input name="notes" placeholder="Notes" className="h-8 w-36" aria-label="Review notes" />
-                        <button name="status" value="approved" disabled={p} className="rounded-md bg-accent px-2 py-1 text-xs text-white">Approve</button>
-                        <button name="status" value="rejected" disabled={p} className="rounded-md border border-border px-2 py-1 text-xs">Reject</button></>}
+                        <button name="status" value="approved" className="rounded-md bg-accent px-2 py-1 text-xs text-white">Approve</button>
+                        <button name="status" value="rejected" className="rounded-md border border-border px-2 py-1 text-xs">Reject</button></>
                       </ActionForm>
                     ) : null}
                   </div>

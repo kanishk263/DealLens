@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ClarificationList } from "@/components/financial/clarification-list";
-import { ActionForm, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FormSubmit } from "@/components/forms/action-form";
 import { Textarea } from "@/components/ui/form-controls";
 import { DocumentUploader } from "@/components/documents/document-uploader";
 import { loadClarifications } from "@/lib/database/clarifications";
@@ -13,13 +13,11 @@ export async function CompanyClarificationsTab({ submissionId, status, maxMb }: 
     <ClarificationList items={items} renderActions={(c) => c.status === "open" ? (
       <div className="space-y-3 border-t border-border pt-3">
         <ActionForm action={respondClarification} className="space-y-2">
-          {(pending) => (
-            <>
+          <>
               <input type="hidden" name="clarificationId" value={c.id} />
               <Textarea name="response" required placeholder="Your response" aria-label="Response" />
-              <SubmitButton pending={pending} size="sm">Send response</SubmitButton>
+              <FormSubmit size="sm">Send response</FormSubmit>
             </>
-          )}
         </ActionForm>
         {status === "clarification_required" ? (
           <details>

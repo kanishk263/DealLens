@@ -153,11 +153,13 @@ def run_checks(ds: Dataset, rows: list[LineRow], docs: list[DocumentInfo], recs:
         add(Issue(f"conflict:{c['category']}:{c['period_id']}", "duplicate_line_items", "high", f"Conflicting values for {label}",
                   f"{len(c['values'])} different values were mapped to {label} in the same period. The analyst-confirmed or highest-confidence value was used.",
                   "Confirm which value is correct and exclude the others.", c["values"], c["period_id"]))
-    for d in ds.duplicates:
-        label = CATEGORIES.get(d["category"], d["category"])
-        add(Issue(f"duplicate:{d['category']}:{d['period_id']}", "duplicate_line_items", "informational", f"{label} reported more than once",
-                  "The same value appears in more than one place (e.g. two documents). Values agree.", "No action needed unless the documents differ in scope.",
-                  d["values"], d["period_id"], client_visible=False))
+    if ds.duplicates:
+        cats = sorted({CATEGORIES.get(d["category"], d["category"]) for d in ds.duplicates})
+        refs = [v for d in ds.duplicates for v in d["values"]][:30]
+        add(Issue("duplicates_agree", "duplicate_line_items", "informational",
+                  f"{len(ds.duplicates)} value(s) reported in more than one place",
+                  f"The same figures appear in more than one location (e.g. a workbook and a PDF) and agree within rounding: {', '.join(cats[:8])}{'…' if len(cats) > 8 else ''}.",
+                  "No action needed unless the documents differ in scope.", refs, client_visible=False))
 
     # Key figures
     for p in actual:

@@ -13,7 +13,7 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 7. Valuation | #6 | Done |
 | 8. Findings and collaboration | #7 | Done |
 | 9. Reports | #8 | Done |
-| 10. Hardening and deployment | #9 | In progress |
+| 10. Hardening and deployment | #9 | Done |
 
 ---
 
@@ -245,3 +245,39 @@ clarification; resolution queues reprocessing. ✅
 PDF text**; company cannot see/download unpublished reports; analyst/self approval blocked; publish before approval
 blocked; final render keeps the snapshot and carries approval metadata; unassigned analyst cannot publish; company
 download works, other company cannot even with ID and path; immutability; v2 supersedes v1. ✅
+
+---
+
+## Phase 10 — Hardening and deployment readiness (2026-10-25)
+
+**Implemented**
+- Content Security Policy, HSTS (production), frame denial, nosniff, referrer and permissions policies; server-action
+  body limit.
+- Playwright end-to-end suite covering the 18-step critical journey with the real worker (Google consent stubbed at
+  the authorize request, which is asserted; see testing.md for the manual part) plus direct route-handler probes.
+- **Bug found by E2E**: server components passed render-prop children to a client form, crashing the findings,
+  clarification, valuation-review and report pages once data existed. Fixed with a `FormSubmit` button that reads
+  `useFormStatus`, so server components pass plain children.
+- Consolidated agreeing duplicate values into one informational issue (a workbook + PDF of the same statement produced
+  33 separate notices).
+- `scripts/seed-demo.ts`: local-only synthetic demo through the real pipeline; removes its temporary superadmin.
+- Worker Dockerfile (non-root), GitHub Actions CI (lint, type-check, unit, build, Python, integration + E2E against a
+  local Supabase stack in CI).
+- Documentation: README, architecture, deployment, testing, troubleshooting (plus earlier auth, authorization,
+  database, methodology guides).
+
+## Final verification (local, 2026-10-25)
+
+| Check | Result |
+|---|---|
+| `eslint .` | ✅ 0 errors |
+| `tsc --noEmit` | ✅ |
+| `next build` | ✅ |
+| TypeScript unit tests | ✅ 43/43 |
+| Python tests | ✅ 117/117 |
+| Integration tests (local Supabase, real worker) | ✅ 72/72 |
+| Playwright E2E (critical journey) | ✅ 12/12, two consecutive runs |
+| Page smoke test (all roles) | ✅ |
+
+**Not verified**: real Google consent and hosted deployment (no Google OAuth client or hosted Supabase/Vercel
+credentials were available in this environment); the CI workflow has been written but its first GitHub run is pending.

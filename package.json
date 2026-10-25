@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "test:e2e": "playwright test",
+    "test:e2e": "NODE_OPTIONS=--conditions=react-server playwright test",
     "test:python": "cd processing && .venv/bin/python -m pytest -q",
     "db:start": "supabase start -x vector,logflare,studio,imgproxy,edge-runtime,supavisor",
     "db:stop": "supabase stop",
@@ -19,7 +19,7 @@
     "db:status": "supabase status",
     "worker": "cd processing && .venv/bin/python -m deallens_worker run",
     "samples": "processing/.venv/bin/python scripts/generate_synthetic_data.py",
-    "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:demo": "NODE_OPTIONS=--conditions=react-server tsx scripts/seed-demo.ts",
     "smoke": "NODE_OPTIONS=--conditions=react-server tsx scripts/smoke-pages.ts",
     "screenshot": "NODE_OPTIONS=--conditions=react-server tsx scripts/screenshot.ts"
   },

@@ -1,7 +1,7 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, Notice } from "@/components/ui/states";
-import { ActionButton, ActionForm } from "@/components/forms/action-form";
+import { ActionButton, ActionForm, FormSubmit } from "@/components/forms/action-form";
 import { Input } from "@/components/ui/form-controls";
 import { Button } from "@/components/ui/button";
 import { ReportPreview } from "@/components/reports/report-preview";
@@ -65,12 +65,12 @@ export default async function ReportsPage({ params, searchParams }: { params: Pr
                     </> : null}
                     {isReviewer && r.status === "pending_review" && !mine ? (
                       <ActionForm action={reviewReport} className="flex flex-wrap items-center gap-2">
-                        {(p) => <>
+                        <>
                           <input type="hidden" name="reportId" value={r.id} />
                           <Input name="notes" placeholder="Review notes" className="h-8 w-56" aria-label="Review notes" />
-                          <Button type="submit" name="decision" value="approved" size="sm" disabled={p}>Approve</Button>
-                          <Button type="submit" name="decision" value="changes_requested" size="sm" variant="secondary" disabled={p}>Request changes</Button>
-                        </>}
+                          <FormSubmit name="decision" value="approved" size="sm">Approve</FormSubmit>
+                          <FormSubmit name="decision" value="changes_requested" size="sm" variant="secondary">Request changes</FormSubmit>
+                        </>
                       </ActionForm>
                     ) : null}
                     {isReviewer && r.status === "pending_review" && mine ? <span className="text-xs text-muted">Another reviewer must approve your report.</span> : null}

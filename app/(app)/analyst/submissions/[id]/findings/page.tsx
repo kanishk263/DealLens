@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, Notice } from "@/components/ui/states";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { ActionForm, ActionButton, SubmitButton } from "@/components/forms/action-form";
+import { ActionButton, ActionForm, FormSubmit } from "@/components/forms/action-form";
 import { Select, Textarea } from "@/components/ui/form-controls";
 import { loadAnalystSubmission } from "@/lib/database/submission-context";
 import { formatAmount, formatDateTime, humanize } from "@/lib/utilities/format";
@@ -77,16 +77,14 @@ export default async function FindingsPage({ params, searchParams }: { params: P
             </ul>
             {canWork ? (
               <ActionForm action={addFindingComment} resetOnSuccess className="space-y-2">
-                {(pending) => (
-                  <>
+                <>
                     <input type="hidden" name="findingId" value={selected.id} />
                     <Textarea name="text" required placeholder="Add a comment" aria-label="Comment" className="min-h-16" />
                     <div className="flex items-center gap-2">
                       <Select name="visibility" defaultValue="internal" className="w-48" aria-label="Comment visibility"><option value="internal">Internal note</option><option value="client_visible">Client visible</option></Select>
-                      <SubmitButton pending={pending} size="sm">Add comment</SubmitButton>
+                      <FormSubmit size="sm">Add comment</FormSubmit>
                     </div>
                   </>
-                )}
               </ActionForm>
             ) : null}
           </CardBody>

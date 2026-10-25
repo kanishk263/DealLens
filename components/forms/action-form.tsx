@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import { useActionState, useEffect, useRef } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { ActionResult } from "@/lib/errors";
@@ -72,6 +73,23 @@ export function SubmitButton({ pending, children, variant = "primary", size = "m
       className={className}
       onClick={(e) => { if (confirm && !window.confirm(confirm)) e.preventDefault(); }}
     >
+      {children}
+    </Button>
+  );
+}
+
+/**
+ * Submit button that reads the enclosing form's pending state itself, so server components can render
+ * <ActionForm> with plain children (functions cannot cross the server → client boundary).
+ */
+export function FormSubmit({ children, variant = "primary", size = "md", confirm, name, value, className }: {
+  children: React.ReactNode; variant?: "primary" | "secondary" | "danger" | "ghost"; size?: "sm" | "md"; confirm?: string;
+  name?: string; value?: string; className?: string;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" variant={variant} size={size} disabled={pending} name={name} value={value} className={className}
+      onClick={(e) => { if (confirm && !window.confirm(confirm)) e.preventDefault(); }}>
       {children}
     </Button>
   );

@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { ActionButton, ActionForm, SubmitButton } from "@/components/forms/action-form";
+import { ActionButton, ActionForm, FormSubmit } from "@/components/forms/action-form";
 import { Field, Input, Textarea } from "@/components/ui/form-controls";
 import { Notice } from "@/components/ui/states";
 import { ClarificationList } from "@/components/financial/clarification-list";
@@ -28,14 +28,12 @@ export default async function AnalystClarifications({ params }: { params: Promis
             <CardHeader title="Request clarification" description="The company is notified. While requests are open the submission is marked 'clarification required'." />
             <CardBody>
               <ActionForm action={createClarification} resetOnSuccess className="space-y-3">
-                {(pending) => (
-                  <>
+                <>
                     <input type="hidden" name="submissionId" value={id} />
                     <Field label="Question" htmlFor="question"><Textarea id="question" name="question" required minLength={5} /></Field>
                     <Field label="Documents requested (optional)" htmlFor="requestedDocuments"><Input id="requestedDocuments" name="requestedDocuments" placeholder="e.g. FY2024 receivables ageing" /></Field>
-                    <SubmitButton pending={pending}>Send to company</SubmitButton>
+                    <FormSubmit>Send to company</FormSubmit>
                   </>
-                )}
               </ActionForm>
             </CardBody>
           </Card>
