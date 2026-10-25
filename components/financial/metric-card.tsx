@@ -18,7 +18,7 @@ export function MetricCard({ label, value, sublabel, unavailableReason, status, 
         </div>
       ) : (
         <>
-          <p className="tabular mt-1 text-2xl font-semibold text-ink">{value}</p>
+          <p className="tabular mt-1 text-xl font-semibold text-ink xl:text-[1.35rem]">{value}</p>
           {sublabel ? <p className="mt-0.5 text-xs text-muted">{sublabel}</p> : null}
           {status === "warning" && unavailableReason ? <p className="mt-1 text-xs text-warning">{unavailableReason}</p> : null}
           {status === "reported" ? <p className="mt-1 text-xs text-info">As reported in source</p> : null}

@@ -20,7 +20,8 @@
     "worker": "cd processing && .venv/bin/python -m deallens_worker run",
     "samples": "processing/.venv/bin/python scripts/generate_synthetic_data.py",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "smoke": "NODE_OPTIONS=--conditions=react-server tsx scripts/smoke-pages.ts"
+    "smoke": "NODE_OPTIONS=--conditions=react-server tsx scripts/smoke-pages.ts",
+    "screenshot": "NODE_OPTIONS=--conditions=react-server tsx scripts/screenshot.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",

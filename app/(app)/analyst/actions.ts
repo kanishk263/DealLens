@@ -94,3 +94,47 @@ export async function transitionSubmission(_: unknown, fd: FormData): Promise<Ac
   const r = data as { ok: boolean; error?: string };
   return r.ok ? { ok: true, message: "Status updated." } : { ok: false, error: r.error ?? "Not permitted" };
 }
+
+export async function proposeAdjustment(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({
+    submissionId: uuid, periodId: uuid,
+    type: z.enum(["restructuring", "transaction_costs", "legal_non_recurring", "owner_related", "other_non_recurring"]),
+    description: z.string().trim().min(3).max(500),
+    amount: z.coerce.number().positive("Amount must be positive; choose the direction separately"),
+    sign: z.enum(["1", "-1"]),
+    evidence: z.string().trim().min(3, "Reference the supporting evidence").max(1000),
+    rationale: z.string().trim().min(10, "Explain why the item is non-recurring (10+ characters)").max(2000),
+  }).safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const d = parsed.data;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("propose_ebitda_adjustment", {
+    p_submission: d.submissionId, p_period: d.periodId, p_type: d.type, p_description: d.description, p_amount: d.amount,
+    p_sign: Number(d.sign), p_evidence: d.evidence, p_rationale: d.rationale,
+  });
+  if (error) return fail(error);
+  return { ok: true, message: "Adjustment proposed. It is excluded from Adjusted EBITDA until approved." };
+}
+
+export async function reviewAdjustment(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ adjustmentId: uuid, decision: z.enum(["approved", "rejected", "proposed"]), notes: z.string().trim().min(3, "Review notes are required").max(2000) })
+    .safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("review_ebitda_adjustment", { p_adjustment: parsed.data.adjustmentId, p_decision: parsed.data.decision, p_notes: parsed.data.notes });
+  if (error) return fail(error);
+  return { ok: true, message: `Adjustment ${parsed.data.decision}.` };
+}
+
+export async function reviewRedFlag(_: unknown, fd: FormData): Promise<ActionResult> {
+  await internal();
+  const parsed = z.object({ flagId: uuid, status: z.enum(["open", "dismissed", "resolved", "escalated"]), notes: z.string().trim().min(3, "Record an explanation").max(2000) })
+    .safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return first(parsed.error);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("review_red_flag", { p_flag: parsed.data.flagId, p_status: parsed.data.status, p_notes: parsed.data.notes });
+  if (error) return fail(error);
+  return { ok: true, message: `Red flag marked ${parsed.data.status}.` };
+}

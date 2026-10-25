@@ -9,8 +9,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 3. Database and company management | #2 | Done |
 | 4. Document upload and processing | #3 | Done |
 | 5. Financial data review | #4 | Done |
-| 6. Financial analytics | #5 | In progress |
-| 7. Valuation | #6 | Pending |
+| 6. Financial analytics | #5 | Done |
+| 7. Valuation | #6 | In progress |
 | 8. Findings and collaboration | #7 | Pending |
 | 9. Reports | #8 | Pending |
 | 10. Hardening and deployment | #9 | Pending |
@@ -156,3 +156,30 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 lose visibility; corrections need reasons, keep raw values and write revisions; company users/out-of-scope analysts
 cannot correct or read revisions; recalculation creates v2, keeps v1 and auto-resolves issues no longer detected;
 DQ resolution rules + audit. ✅ Full TS suite 69/69 ✅; smoke test over all analyst pages ✅.
+
+---
+
+## Phase 6 — Financial analytics (2026-10-25)
+
+**Implemented**
+- Analysis Studio with tabs: Overview (KPI cards incl. Adjusted EBITDA, revenue, margins, red-flag severity, cash flow),
+  Revenue & growth (CAGR, plan variance, concentration), Profitability (waterfall, EBITDA, margin comparison,
+  reported vs calculated EBITDA), EBITDA adjustments (bridge + register with propose/review), Working capital,
+  Debt & leverage, Cash flow.
+- Provenance-aware metric tables: every value opens its formula, inputs, basis and source line items with references.
+- Red-flag review page (rule, observed vs comparison, threshold + rationale, follow-up, review with explanation).
+- Company "Preliminary analytics" tab, clearly labelled as automated and unreviewed.
+- Charts (Recharts): single value axis each (no dual axes), reference categorical palette in fixed order validated with
+  the palette checker (all checks pass; low-contrast slots relieved by a data-table view on every chart), HTML legends in
+  series order, tooltips, null values shown as gaps, zero baselines.
+- `lib/financial/ebitda.ts` bridge; metric display definitions; percentage-point formatting for margin changes.
+- `docs/financial-methodology.md`.
+
+**Bug found by tests**: the analysis job crashed when EBITDA adjustments existed (Decimal ÷ float); fixed with a
+regression test.
+
+**Tests**: Python 112 (17 financial edge cases: zero revenue, negative EBITDA, missing/non-comparable periods,
+zero COGS, negative working capital, missing AR, partial/missing debt, rounding tolerance, untested reconciliation,
+mixed currencies, conflicting values, analyst precedence, adjustment flag). TS 79 incl. `tests/unit/ebitda.test.ts`
+and `tests/integration/analytics.test.ts` (four-eyes adjustments, internal-only flags/adjustments, flag review notes,
+review status persists across re-analysis). ✅ Visual check of rendered charts with real sessions.

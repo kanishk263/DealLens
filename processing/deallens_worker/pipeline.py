@@ -177,7 +177,7 @@ def handle_analyze(conn, job: dict) -> None:
                        where li.submission_id = %s and d.deleted_at is null""", (sid,))
         items = cur.fetchall()
         cur.execute("select financial_period_id::text, amount, sign, status from public.ebitda_adjustments where submission_id = %s", (sid,))
-        adjustments = [dict(r) for r in cur.fetchall()]
+        adjustments = [{**r, "amount": float(r["amount"]), "sign": int(r["sign"])} for r in cur.fetchall()]
 
     rows, candidates = [], {}
     for li in items:
