@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* DealLens design tokens: neutral surfaces, one restrained navy accent, semantic status colours. */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-canvas: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-subtle: #f1f3f6;
+  --color-border: #dfe3e8;
+  --color-ink: #111827;
+  --color-muted: #5b6573;
+  --color-faint: #8a94a3;
+
+  --color-accent: #1d3b6e;
+  --color-accent-hover: #162e57;
+  --color-accent-soft: #e8eef8;
+
+  --color-positive: #157347;
+  --color-positive-soft: #e6f4ec;
+  --color-warning: #9a5b00;
+  --color-warning-soft: #fdf3e1;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-info: #1f5fa8;
+  --color-info-soft: #e7f0fb;
+}
+
+html, body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
