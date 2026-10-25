@@ -12,8 +12,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 6. Financial analytics | #5 | Done |
 | 7. Valuation | #6 | Done |
 | 8. Findings and collaboration | #7 | Done |
-| 9. Reports | #8 | In progress |
-| 10. Hardening and deployment | #9 | Pending |
+| 9. Reports | #8 | Done |
+| 10. Hardening and deployment | #9 | In progress |
 
 ---
 
@@ -221,3 +221,27 @@ before approval; self-approval blocked; company sees only approved client-visibl
 on them (internal comments and internal findings never); edit resets approval; company cannot write findings;
 clarification state transitions; cross-company notifications and responses blocked; attachment upload during
 clarification; resolution queues reprocessing. ✅
+
+---
+
+## Phase 9 — Reports (2026-10-25)
+
+**Implemented**
+- Migration `…1000_report_snapshots`: reports store an immutable content **snapshot** captured at draft render; the
+  reviewed snapshot cannot change; approval queues a **final render of the same snapshot** with approval metadata;
+  publication requires the final render; published/superseded reports are immutable (trigger).
+- Worker `reporting/`: snapshot builder that queries only client-safe sources (approved client-visible findings,
+  approved adjustments and valuations, client-visible DQ issues, metrics, reconciliations) and a ReportLab renderer
+  (cover with version/generation/approval metadata, confidentiality notice, executive summary, scope & methodology,
+  overview, data quality, revenue and EBITDA charts, metric tables with unavailable reasons, EBITDA bridge, findings,
+  valuation, limitations, definitions appendix, page numbers, draft watermark, synthetic-data labelling, generic PDF
+  metadata). Neutral filenames; renders discarded if the report state changes mid-render.
+- Report builder (sections, executive summary, limitations), regenerate, snapshot preview, PDF download, submit,
+  reviewer approve / request changes (not the author), publish (reviewer or assigned analyst, only after final render),
+  reopen for a new version. Company report tab and Published Reports page; signed, audited downloads.
+
+**Tests**: Python `test_report_pdf.py` (5). `tests/integration/reports.test.ts` (8): draft render from snapshot with
+**internal finding text, internal comments, model comments and review notes absent from the snapshot and the extracted
+PDF text**; company cannot see/download unpublished reports; analyst/self approval blocked; publish before approval
+blocked; final render keeps the snapshot and carries approval metadata; unassigned analyst cannot publish; company
+download works, other company cannot even with ID and path; immutability; v2 supersedes v1. ✅
