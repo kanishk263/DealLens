@@ -10,8 +10,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 4. Document upload and processing | #3 | Done |
 | 5. Financial data review | #4 | Done |
 | 6. Financial analytics | #5 | Done |
-| 7. Valuation | #6 | In progress |
-| 8. Findings and collaboration | #7 | Pending |
+| 7. Valuation | #6 | Done |
+| 8. Findings and collaboration | #7 | In progress |
 | 9. Reports | #8 | Pending |
 | 10. Hardening and deployment | #9 | Pending |
 
@@ -183,3 +183,21 @@ zero COGS, negative working capital, missing AR, partial/missing debt, rounding 
 mixed currencies, conflicting values, analyst precedence, adjustment flag). TS 79 incl. `tests/unit/ebitda.test.ts`
 and `tests/integration/analytics.test.ts` (four-eyes adjustments, internal-only flags/adjustments, flag review notes,
 review status persists across re-analysis). ✅ Visual check of rendered charts with real sessions.
+
+---
+
+## Phase 7 — Valuation (2026-10-25)
+
+**Implemented**
+- `lib/valuation`: comparable-company engine (EV/EBITDA, EV/Revenue, validity rules with visible exclusion reasons,
+  mean/median/quartiles, P25/median/P75 scenarios, justified override, equity bridge) and DCF engine (per-year
+  assumptions, UFCF, end/mid-year discounting, Gordon terminal value with WACC > g, TV share, scenarios, 5×5
+  sensitivity grid with invalid cells, validation and warnings).
+- Valuation studio: interactive DCF and comparables builders with live preview, inputs pre-filled from the latest
+  analysis with stated provenance; saved model versions with server-side recomputation, reproducibility check,
+  submit-for-review and reviewer approval (not the author); valuation-range ("football field") chart.
+- Methodology section 10.
+
+**Tests**: `tests/unit/valuation.test.ts` (15, incl. a hand-computed DCF: EV = 1,421.875) and
+`tests/integration/valuation.test.ts` (4: versioning, reproducibility from stored inputs, scope/visibility, four-eyes
+approval). Full TS suite 98/98 ✅. Visual check of the DCF page ✅.

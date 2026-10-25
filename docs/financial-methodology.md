@@ -154,6 +154,51 @@ Analysts can dismiss, resolve or escalate a flag with a mandatory explanation; r
 A red flag indicates a matter requiring investigation, **not** proof of fraud, misrepresentation or misconduct.
 Where the data cannot establish a driver, the flag says so and labels the item an area for investigation.
 
-## 10. Valuation
+## 10. Valuation (engine `valuation-v1`, `lib/valuation/`)
 
-See section 10 of this document, maintained with the valuation engine (Phase 7).
+Valuations are **analytical estimates** under stated assumptions, not guarantees of transaction price or return.
+Every save creates an immutable model version storing inputs, assumptions, outputs, engine version, author and review
+status. Outputs are **recomputed on the server** from validated inputs at save time (browser previews are discarded),
+and the model list re-runs the engine on stored inputs to show whether each version reproduces.
+
+### 10.1 Comparable companies
+- Comparables are entered manually with a mandatory source. DealLens provides no market data; sample values are not
+  verified market data.
+- Multiples: `EV / EBITDA` and `EV / Revenue`.
+- Invalid observations are excluded with a visible reason: excluded by analyst (with reason), currency different from the
+  target, EV missing/non-positive, EBITDA ≤ 0 (EV/EBITDA not meaningful), revenue ≤ 0.
+- Statistics over the valid included set: count, mean, median, 25th/75th percentiles (linear interpolation), min, max.
+  Fewer than three valid comparables → warning.
+- Selection: **low = P25, base = median, high = P75**. The analyst may override the base multiple only with a written
+  justification.
+- `Implied EV = selected multiple × target metric`. The target metric defaults to Adjusted EBITDA when approved
+  adjustments exist, otherwise the headline EBITDA; it must be positive.
+
+### 10.2 Discounted cash flow
+```
+Revenue_t = Revenue_{t−1} × (1 + g_t)
+EBITDA_t  = Revenue_t × margin_t;  D&A_t = Revenue_t × d_t;  EBIT_t = EBITDA_t − D&A_t
+Taxes_t   = max(EBIT_t, 0) × tax rate      (no tax credit on losses — conservative simplification)
+NWC_t     = Revenue_t × nwc_t;  ΔNWC_t = NWC_t − NWC_{t−1}  (NWC_0 = base-year working capital)
+UFCF_t    = EBIT_t × (1 − tax) + D&A_t − Capex_t − ΔNWC_t
+PV_t      = UFCF_t / (1 + WACC)^t           (t − 0.5 with the mid-year convention)
+TV        = UFCF_N × (1 + g_T) / (WACC − g_T)   requires WACC > g_T
+PV(TV)    = TV / (1 + WACC)^N
+EV        = Σ PV_t + PV(TV)
+```
+Validation: 1–15 forecast years with one assumption per year; base revenue > 0; WACC 1–50%; terminal growth −5–10% and
+below WACC; tax 0–60%; growth −90–200%; margins −100–90%; D&A and capex non-negative. Warnings: terminal growth > 4%,
+growth > 50%, negative margins, non-positive final-year UFCF, terminal value > 85% of EV.
+
+Sensitivity: EV for WACC ±1/±2 pp × terminal growth ±0.5/±1 pp; combinations with WACC ≤ g are shown as invalid.
+Scenarios: low (WACC +1 pp, g −0.5 pp), base, high (WACC −1 pp, g +0.5 pp).
+Pre-filled inputs come from the latest analysis (revenue, EBITDA margin, D&A, capex, trade working capital, net debt);
+tax 25%, WACC 10% and terminal growth 2% are illustrative defaults the analyst must replace.
+
+### 10.3 Equity bridge
+`Equity value = Enterprise value − Net debt − Σ explicit bridge items` (e.g. minority interests, debt-like items).
+Equity value is not shown when net debt is unavailable. Enterprise value and equity value are always labelled separately.
+
+### 10.4 Review
+Models start as `draft`; the author may submit for review; approval/rejection requires a finance reviewer who is not the
+author. Only approved models are eligible for client-facing reports.

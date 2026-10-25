@@ -159,3 +159,30 @@ export function SeverityBars({ counts }: { counts: { severity: string; count: nu
     </div>
   );
 }
+
+export interface RangeRow { label: string; low: number; base: number; high: number }
+
+/** Valuation "football field": horizontal low–high ranges with the base case labelled. One value axis. */
+export function ValuationRange({ rows, currency, unit }: { rows: RangeRow[]; currency: string; unit: string }) {
+  const data = rows.map((r) => ({ label: r.label, base: Math.min(r.low, r.high), span: Math.abs(r.high - r.low), mid: r.base, low: r.low, high: r.high }));
+  return (
+    <div style={{ height: 60 + rows.length * 44 }} role="img" aria-label="Valuation range by method">
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 48, left: 8, bottom: 0 }}>
+          <CartesianGrid horizontal={false} stroke="var(--color-chart-grid)" />
+          <XAxis type="number" {...axisProps} tickFormatter={(v) => compact(v, "amount")} domain={["auto", "auto"]} />
+          <YAxis type="category" dataKey="label" {...axisProps} width={150} />
+          <Tooltip cursor={{ fill: "var(--color-subtle)" }} content={({ active, payload }) => active && payload?.[0] ? (
+            <div className="rounded-md border border-border bg-surface px-3 py-2 text-xs shadow-md">
+              <p className="font-medium">{(payload[0].payload as { label: string }).label}</p>
+              {(["low", "mid", "high"] as const).map((k) => <p key={k} className="tabular">{k === "mid" ? "Base" : k[0].toUpperCase() + k.slice(1)}: {formatMetric((payload[0].payload as Record<string, number>)[k], "amount", currency, unit)}</p>)}
+            </div>) : null} />
+          <Bar dataKey="base" stackId="r" fill="transparent" isAnimationActive={false} />
+          <Bar dataKey="span" stackId="r" fill="var(--color-series-1)" radius={4} maxBarSize={18} isAnimationActive={false}>
+            <LabelList dataKey="mid" position="right" fontSize={10} fill="var(--color-ink)" formatter={(v: unknown) => (typeof v === "number" ? `base ${compact(v, "amount")}` : "")} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
