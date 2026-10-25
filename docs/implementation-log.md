@@ -5,8 +5,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | Phase | Issue | Status |
 |---|---|---|
 | 1. Repository and foundation | #1 | Done |
-| 2. Authentication and authorization | #10 | In progress |
-| 3. Database and company management | #2 | Pending |
+| 2. Authentication and authorization | #10 | Done |
+| 3. Database and company management | #2 | In progress |
 | 4. Document upload and processing | #3 | Pending |
 | 5. Financial data review | #4 | Pending |
 | 6. Financial analytics | #5 | Pending |
@@ -37,3 +37,35 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 **Known limitations**: authenticated pages beyond the shell arrive in later phases.
 
 **External configuration still required**: Supabase project + Google OAuth client (Phase 2 docs).
+
+---
+
+## Phase 2 — Authentication and authorization (2026-10-25)
+
+**Implemented**
+- Real Google OAuth through Supabase Auth (PKCE): `/login` → Google → Supabase → `/auth/callback` (code exchange,
+  verified user, login audit), POST-only `/auth/signout`, auth error page, open-redirect-safe `next` handling.
+- Complete migration-managed schema (9 migrations): identity, roles, companies, memberships, access requests,
+  invitations, deals, submissions + workflow transition table, documents, processing jobs, financial data, quality,
+  red flags, EBITDA adjustments, findings, clarifications, valuation, reports, notifications, append-only audit log.
+- Authorization: helper predicates in a non-exposed `private` schema, RLS on every table, no direct writes for client
+  roles, SECURITY DEFINER operations with identity/role/scope/state checks and audit logging.
+- Account approval workflow (pending → active/rejected), suspension, role grant/revoke with self-escalation blocks,
+  hashed time-limited invitations bound to the invited email.
+- Secure superadmin bootstrap (`SUPERADMIN_BOOTSTRAP_EMAIL` + service-role-only DB function re-checking `auth.users`).
+- Access-request and invitation-acceptance pages.
+- Private storage buckets with path-bound object policies.
+
+**Tests**
+- `tests/integration/auth-authorization.test.ts` — 16 tests against the local Supabase stack with real JWTs:
+  pending users blocked, approval/rejection, no self-grant (RPC and direct table writes), service-role-only bootstrap,
+  identity mismatch, superadmin self-change blocked, analyst cannot administer, suspended users blocked, invitation
+  email binding/expiry/single use, audit append-only. ✅ 16/16
+- `tests/unit/auth-utils.test.ts` — redirect safety, role routing, safe error mapping. ✅ 13/13
+
+**Known limitations**
+- The Google consent screen itself is verified by a documented manual test (`docs/authentication.md` §4); it cannot be
+  automated reliably.
+- Email/password sign-in is enabled only on the local stack for test fixtures; it must be disabled on hosted projects.
+
+**External configuration still required**: Google OAuth client ID/secret; hosted Supabase project; bootstrap email.
