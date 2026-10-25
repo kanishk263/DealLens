@@ -4,7 +4,8 @@
  */
 import { config } from "dotenv";
 config({ path: ".env.local" });
-import { analyst, cleanup, companyUser, createCompany, makeSuperadmin } from "../tests/integration/helpers";
+import { analyst, cleanup, companyUser, createCompany, drainWorker, makeSuperadmin, newSubmission, sampleFile, XLSX } from "../tests/integration/helpers";
+import { uploadDocument } from "../lib/storage/documents";
 import { cookieHeader, sessionCookies } from "../tests/support/session-cookies";
 
 const BASE = process.env.BASE ?? "http://localhost:3100";
@@ -30,10 +31,17 @@ async function check(label: string, email: string, password: string, paths: stri
   const company = await createCompany(admin, "Smoke Co");
   const user = await companyUser(admin, company, "smoke");
   const fin = await analyst(admin, "smokeanalyst");
+  const sub = await newSubmission(user, company, "Smoke FY22-24");
+  const up = await uploadDocument(user.client, sub, sampleFile("meridian-financial-statements.xlsx", XLSX), "income_statement", 25 * 1024 * 1024, null);
+  if (!up.ok) throw new Error(up.error);
+  await user.client.rpc("submit_submission", { p_submission: sub });
+  drainWorker();
+  const subPaths = ["", "?tab=documents", "?tab=quality", "?tab=analytics", "?tab=clarifications", "?tab=reports"].map((t) => `/submissions/${sub}${t}`);
+  const analystPaths = (process.env.SMOKE_ANALYST_PATHS ?? "").split(",").filter(Boolean).map((p) => p.replace("{sub}", sub));
   let f = 0;
   f += await check("admin", admin.email, admin.password, ["/admin", "/admin/access-requests", "/admin/users", "/admin/companies", `/admin/companies/${company}`, "/admin/submissions", "/admin/jobs", "/admin/audit", "/admin/settings", "/notifications", "/settings"]);
-  f += await check("company", user.email, user.password, ["/dashboard", "/submissions", "/notifications", "/settings", "/admin", ...extra]);
-  f += await check("analyst", fin.email, fin.password, ["/dashboard", "/admin/users"]);
+  f += await check("company", user.email, user.password, ["/dashboard", "/submissions", "/submissions/new", ...subPaths, "/notifications", "/settings", "/admin", ...extra]);
+  f += await check("analyst", fin.email, fin.password, ["/dashboard", "/admin/users", `/submissions/${sub}`, ...analystPaths]);
   await cleanup();
   if (f) { console.error(`${f} page(s) failed`); process.exit(1); }
 })();

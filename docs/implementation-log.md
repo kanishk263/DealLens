@@ -7,8 +7,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 1. Repository and foundation | #1 | Done |
 | 2. Authentication and authorization | #10 | Done |
 | 3. Database and company management | #2 | Done |
-| 4. Document upload and processing | #3 | In progress |
-| 5. Financial data review | #4 | Pending |
+| 4. Document upload and processing | #3 | Done |
+| 5. Financial data review | #4 | In progress |
 | 6. Financial analytics | #5 | Pending |
 | 7. Valuation | #6 | Pending |
 | 8. Findings and collaboration | #7 | Pending |
@@ -96,3 +96,41 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 **Notes**
 - Unauthorised page requests redirect via a streamed RSC redirect (HTTP 200 + redirect instruction) because of the
   route-group loading boundary; the protected page body is never rendered (only its static `<title>`).
+
+---
+
+## Phase 4 — Document upload and processing (2026-10-25)
+
+**Implemented**
+- Upload path: client uploader with per-file progress → `POST /api/submissions/[id]/documents` (session + role check,
+  rate limit, size/extension/MIME/magic-byte validation, SHA-256) → `register_document` (server-generated, sanitised
+  object path) → private Storage upload with the user's session → `finalize_document` (verifies the object exists).
+  Failures roll back the object and row; stale `uploading` rows are swept by the worker.
+- New Submission wizard (create draft → upload → submit) and company submission detail (overview + timeline,
+  documents with versions/download/remove, client-visible data-quality issues).
+- Signed, 60-second, audited document downloads created under the caller's session (storage RLS decides).
+- Python worker (`processing/deallens_worker`): `SKIP LOCKED` job claiming, retries with exponential backoff for
+  transient errors, crash recovery of stale jobs, idempotent re-extraction, extraction in a killable subprocess with a
+  timeout, retention/orphan maintenance.
+- Extraction engine: signature verification (zip-bomb and macro rejection), XLSX (cached values only, formulas never
+  evaluated; hidden sheets skipped and reported), XLS, CSV (dialect sniffing), text-based PDF (tables + text lines,
+  page references); scanned PDFs rejected with `SCANNED_PDF_UNSUPPORTED`. Layout detection of period headers
+  (FY/years/A-F-B suffixes/quarters/months/dates, fiscal-year-end aware), label column, headings, subtotals, currency
+  and unit indicators. Source references: sheet!cell, CSV row/column, PDF page/table/row/column.
+- Normalisation: deterministic, statement-aware label rules with confidence; `needs_review` below 0.85 or when
+  ambiguous; unit scaling; expense sign normalisation; currency mismatches never converted. Raw labels/values preserved.
+- Analysis core (also used in Phase 5/6): value selection with conflict detection, metrics, reconciliations,
+  data-quality checks and red-flag rules with thresholds in `processing/config/thresholds.json`.
+- Synthetic data generator with a three-statement model and documented deliberate issues (`samples/README.md`).
+- Security headers (nosniff, frame deny, referrer policy, permissions policy).
+
+**Tests**
+- Python: 94 tests (parsers, rules, normalisation, end-to-end sample known answers, scanned/mismatch rejection,
+  subprocess error propagation). ✅
+- `tests/integration/processing.test.ts` (14): real upload → real worker → persisted results; checksum/path;
+  status only after persistence; raw vs normalised values with cell references; metric provenance; reconciliations;
+  signed URL for owner; **other company and superadmin cannot read the object by guessing the path**; anon blocked;
+  no uploads after submission; client-visible DQ only; scanned PDF failure + notification + retry; duplicate checksum;
+  idempotent re-processing. ✅ Unit: file signatures. ✅ Total TS: 62/62.
+
+**Known limitations**: in-memory rate limiting is per instance; OCR is out of scope.

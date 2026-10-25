@@ -1,0 +1,22 @@
+{
+  "_comment": "Illustrative default thresholds for DealLens rule engines. They are NOT industry standards; they were chosen as conservative screening levels for a demonstration and should be calibrated per engagement. Each rule documents its rationale.",
+  "data_quality": {
+    "large_movement_pct": { "value": 0.5, "rationale": "A >50% period-over-period change in a key line item is unusual enough to confirm with the source.", "illustrative": true },
+    "min_annual_periods": { "value": 3, "rationale": "Three historical periods are commonly requested for trend analysis in due diligence scopes.", "illustrative": true }
+  },
+  "red_flags": {
+    "revenue_decline_consecutive": { "periods": 2, "severity": "high", "rationale": "Two consecutive declines suggest a trend rather than a one-off.", "illustrative": true },
+    "gross_margin_deterioration": { "pp": 0.03, "severity": "medium", "rationale": "A 3 percentage-point fall in gross margin is material for most cost structures.", "illustrative": true },
+    "ebitda_margin_deterioration": { "pp": 0.03, "severity": "medium", "rationale": "A 3 percentage-point fall in EBITDA margin warrants explanation of cost drivers.", "illustrative": true },
+    "ocf_below_ebitda": { "ratio": 0.7, "periods": 2, "severity": "medium", "rationale": "Operating cash flow persistently below 70% of EBITDA may indicate weak earnings quality or working-capital absorption.", "illustrative": true },
+    "receivables_outpacing_revenue": { "pp": 0.15, "severity": "medium", "rationale": "Receivables growing 15pp faster than revenue may indicate collection issues or revenue timing.", "illustrative": true },
+    "inventory_outpacing_revenue": { "pp": 0.15, "severity": "medium", "rationale": "Inventory growing 15pp faster than revenue may indicate obsolescence or overstocking.", "illustrative": true },
+    "working_capital_absorption": { "pct_of_revenue": 0.05, "severity": "medium", "rationale": "An increase in trade working capital above 5% of revenue absorbs significant cash.", "illustrative": true },
+    "high_leverage": { "multiple": 3.5, "severity": "high", "rationale": "Net debt above 3.5x EBITDA is a common screening level for elevated leverage; covenant levels vary.", "illustrative": true },
+    "negative_fcf": { "periods": 2, "severity": "high", "rationale": "Negative free cash flow in two or more periods indicates reliance on external funding.", "illustrative": true },
+    "large_unexplained_movement": { "pct": 0.5, "min_pct_of_revenue": 0.05, "severity": "low", "rationale": "Large movements in material line items should be explained by management.", "illustrative": true },
+    "significant_ebitda_adjustments": { "pct_of_ebitda": 0.1, "severity": "medium", "rationale": "Adjustments above 10% of reported EBITDA materially affect the earnings base used in valuation.", "illustrative": true },
+    "customer_concentration": { "top1": 0.2, "top5": 0.5, "severity": "medium", "rationale": "A single customer above 20% (or top five above 50%) of revenue is a concentration risk.", "illustrative": true },
+    "reported_vs_recalculated": { "pct": 0.02, "severity": "medium", "rationale": "Reported subtotals differing from recalculation by more than 2% suggest mapping or arithmetic issues.", "illustrative": true }
+  }
+}

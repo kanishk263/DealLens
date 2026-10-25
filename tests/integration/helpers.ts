@@ -111,3 +111,34 @@ export function expectCode(error: { code?: string } | null, code: string) {
   if (!error) throw new Error(`Expected error ${code} but the call succeeded`);
   if (error.code !== code) throw new Error(`Expected error ${code}, got ${error.code}: ${JSON.stringify(error)}`);
 }
+
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+/** Runs the real Python worker until the queue is empty. */
+export function drainWorker() {
+  const root = path.resolve(__dirname, "../..");
+  execFileSync(path.join(root, "processing/.venv/bin/python"), ["-m", "deallens_worker", "drain"], {
+    cwd: path.join(root, "processing"),
+    env: { ...process.env, SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!, DATABASE_URL: process.env.DATABASE_URL!, WORKER_POLL_SECONDS: "0.2" },
+    stdio: process.env.DEBUG_WORKER ? "inherit" : "pipe",
+    timeout: 180_000,
+  });
+}
+
+export function sampleFile(name: string, type: string): File {
+  const bytes = readFileSync(path.resolve(__dirname, "../../samples", name));
+  return new File([bytes], name, { type });
+}
+
+export const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+export async function newSubmission(u: TestUser, company: string, name = "FY22-FY24") {
+  const { data, error } = await u.client.rpc("create_submission", {
+    p_company: company, p_name: name, p_deal_type: "financial_due_diligence", p_period_start: "2022-01-01", p_period_end: "2024-12-31",
+    p_currency: "USD", p_unit: "thousands",
+  });
+  if (error) throw error;
+  return data as string;
+}

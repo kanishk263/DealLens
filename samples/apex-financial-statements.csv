@@ -1,0 +1,42 @@
+Apex Digital Services Ltd. (Synthetic) — Financial statements (SYNTHETIC)
+USD '000
+Line item,FY2022,FY2023,FY2024
+Income Statement
+Revenue,"26,000","31,200","36,500"
+Cost of sales,"7,540","8,736","10,038"
+Gross profit,"18,460","22,464","26,462"
+"Selling, general and administrative expenses","8,060","9,672","11,315"
+Research and development,"3,120","3,744","4,380"
+EBITDA,"6,480","8,098","9,667"
+Depreciation and amortisation,650,780,912
+Operating profit,"6,630","8,268","9,855"
+Finance costs,0,0,0
+Profit before tax,"6,630","8,268","9,855"
+Income tax expense,"1,658","2,067","2,464"
+Net income,"4,972","6,201","7,391"
+Balance Sheet
+Cash and cash equivalents,"15,111","21,592","29,225"
+Trade receivables,"4,416","5,129","6,100"
+Prepayments,728,757,787
+Total current assets,"20,255","27,478","36,112"
+"Property, plant and equipment","1,970","1,814","1,632"
+Intangible assets,"5,200","5,200","5,200"
+Total assets,"27,425","34,492","42,944"
+Trade payables,723,814,990
+Accrued expenses,"1,365","1,433","1,505"
+Deferred revenue,"4,715","5,422","6,235"
+Total current liabilities,"6,803","7,669","8,730"
+Provisions,300,300,300
+Total liabilities,"7,103","7,969","9,030"
+Total equity,"20,322","26,523","33,914"
+Total liabilities and equity,"27,425","34,492","42,944"
+Cash Flow Statement
+Net income,"4,972","6,201","7,391"
+Depreciation and amortisation,650,780,912
+Net cash from operating activities,"6,131","7,105","8,363"
+"Purchase of property, plant and equipment",-520,-624,-730
+Net cash used in investing activities,-520,-624,-730
+Net cash from financing activities,0,0,0
+Net increase in cash,"5,611","6,481","7,633"
+Cash at beginning of year,"9,500","15,111","21,592"
+Cash at end of year,"15,111","21,592","29,225"
