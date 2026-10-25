@@ -8,8 +8,8 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
 | 2. Authentication and authorization | #10 | Done |
 | 3. Database and company management | #2 | Done |
 | 4. Document upload and processing | #3 | Done |
-| 5. Financial data review | #4 | In progress |
-| 6. Financial analytics | #5 | Pending |
+| 5. Financial data review | #4 | Done |
+| 6. Financial analytics | #5 | In progress |
 | 7. Valuation | #6 | Pending |
 | 8. Findings and collaboration | #7 | Pending |
 | 9. Reports | #8 | Pending |
@@ -134,3 +134,25 @@ Each phase ends with checks, a commit, and an entry here. Tracking issues: one G
   idempotent re-processing. ✅ Unit: file signatures. ✅ Total TS: 62/62.
 
 **Known limitations**: in-memory rate limiting is per instance; OCR is out of scope.
+
+---
+
+## Phase 5 — Financial data review (2026-10-25)
+
+**Implemented**
+- Analyst workspace: dashboard (unassigned, mine, in analysis, clarifications, under review, reports awaiting approval,
+  completed), work queue (unassigned / mine / all for reviewers; priority sort by open critical/high issues then age;
+  race-safe claim; reviewer assignment).
+- Submission workspace shell with section tabs and read-only mode outside the analyst's write scope.
+- Financial data review: line items with raw value, normalised value, category, mapping status, confidence, source
+  reference and extraction method; views by statement and "needs review"; search/sort/pagination/column visibility;
+  correction modal (category, decision, normalised value, mandatory reason) and per-item revision history; bulk
+  confirmation of proposed mappings; recalculation trigger.
+- Data-quality review: reconciliation table (reconciled / variance / not tested with reasons), issue list with
+  status changes and notes (notes mandatory when resolving/dismissing), client-visible vs internal badges.
+- Submission audit trail; category taxonomy mirrored in TypeScript with a sync test against the Python source.
+
+**Tests**: `tests/integration/data-review.test.ts` (6): concurrent claims → exactly one succeeds; out-of-scope analysts
+lose visibility; corrections need reasons, keep raw values and write revisions; company users/out-of-scope analysts
+cannot correct or read revisions; recalculation creates v2, keeps v1 and auto-resolves issues no longer detected;
+DQ resolution rules + audit. ✅ Full TS suite 69/69 ✅; smoke test over all analyst pages ✅.

@@ -36,12 +36,14 @@ async function check(label: string, email: string, password: string, paths: stri
   if (!up.ok) throw new Error(up.error);
   await user.client.rpc("submit_submission", { p_submission: sub });
   drainWorker();
+  await fin.client.rpc("claim_submission", { p_submission: sub });
   const subPaths = ["", "?tab=documents", "?tab=quality", "?tab=analytics", "?tab=clarifications", "?tab=reports"].map((t) => `/submissions/${sub}${t}`);
   const analystPaths = (process.env.SMOKE_ANALYST_PATHS ?? "").split(",").filter(Boolean).map((p) => p.replace("{sub}", sub));
   let f = 0;
   f += await check("admin", admin.email, admin.password, ["/admin", "/admin/access-requests", "/admin/users", "/admin/companies", `/admin/companies/${company}`, "/admin/submissions", "/admin/jobs", "/admin/audit", "/admin/settings", "/notifications", "/settings"]);
   f += await check("company", user.email, user.password, ["/dashboard", "/submissions", "/submissions/new", ...subPaths, "/notifications", "/settings", "/admin", ...extra]);
-  f += await check("analyst", fin.email, fin.password, ["/dashboard", "/admin/users", `/submissions/${sub}`, ...analystPaths]);
+  const ws = ["", "/data", "/data?view=all", "/quality", "/quality?status=all", "/analysis", "/red-flags", "/valuation", "/findings", "/clarifications", "/reports", "/audit"].map((t) => `/analyst/submissions/${sub}${t}`);
+  f += await check("analyst", fin.email, fin.password, ["/dashboard", "/analyst", "/analyst/queue", "/analyst/queue?view=mine", ...ws, "/admin/users", `/submissions/${sub}`, ...analystPaths]);
   await cleanup();
   if (f) { console.error(`${f} page(s) failed`); process.exit(1); }
 })();
